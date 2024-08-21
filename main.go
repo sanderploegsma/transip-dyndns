@@ -6,6 +6,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/transip/gotransip/v6"
 	"github.com/transip/gotransip/v6/domain"
@@ -24,7 +25,7 @@ const (
 	DnsEntryTypeFlagShort   = "t"
 	DomainNameFlagFull      = "domain"
 	DomainNameFlagShort     = "d"
-	DnsEntryExpiryFlagFull  = "expiry"
+	DnsEntryTTLFlagFull     = "ttl"
 	PrivateKeyPathEnvVar    = "TRANSIP_PRIVATE_KEY"
 	PrivateKeyPathFlagFull  = "private-key"
 	PrivateKeyPathFlagShort = "k"
@@ -32,7 +33,7 @@ const (
 	DnsEntryTypeA    = "A"
 	DnsEntryTypeAAAA = "AAAA"
 
-	DefaultDnsEntryExpiry = 3600
+	DefaultDnsEntryTTL = 1 * time.Hour
 )
 
 var (
@@ -49,7 +50,7 @@ func main() {
 	var domainName string
 	var dnsEntries cli.StringSlice
 	var dnsEntryTypes cli.StringSlice
-	var dnsEntryExpiry int
+	var dnsEntryTTL time.Duration
 
 	app := &cli.App{
 		Usage:           "Automatically update DNS entries in your TransIP domain with your current public IP address.",
@@ -103,18 +104,18 @@ func main() {
 				},
 				Destination: &dnsEntryTypes,
 			},
-			&cli.IntFlag{
-				Name:  DnsEntryExpiryFlagFull,
-				Usage: "expiry for newly created DNS entries",
-				Value: DefaultDnsEntryExpiry,
-				Action: func(ctx *cli.Context, i int) error {
+			&cli.DurationFlag{
+				Name:  DnsEntryTTLFlagFull,
+				Usage: "Time To Live (TTL) for newly created DNS entries",
+				Value: DefaultDnsEntryTTL,
+				Action: func(ctx *cli.Context, i time.Duration) error {
 					if i <= 0 {
-						return fmt.Errorf("invalid DNS entry expiry value: %d", i)
+						return fmt.Errorf("invalid DNS entry TTL value: %d", i)
 					}
 
 					return nil
 				},
-				Destination: &dnsEntryExpiry,
+				Destination: &dnsEntryTTL,
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -135,7 +136,7 @@ func main() {
 
 			for dnsEntryType, getIPAddress := range getIPAddressforDnsEntryType {
 				if slices.Contains(dnsEntryTypes.Value(), dnsEntryType) {
-					errs = append(errs, updater.UpdateDNSEntries(domainName, dnsEntries.Value(), dnsEntryExpiry, dnsEntryType, getIPAddress))
+					errs = append(errs, updater.UpdateDNSEntries(domainName, dnsEntries.Value(), dnsEntryTTL, dnsEntryType, getIPAddress))
 				}
 			}
 

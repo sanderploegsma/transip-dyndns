@@ -3,15 +3,12 @@ package main
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/transip/gotransip/v6/domain"
 )
-
-func TestDNSEntryIsUpToDate(t *testing.T) {
-	// TODO
-}
 
 func TestDNSEntryUpdated(t *testing.T) {
 	domainName := "example.com"
@@ -33,7 +30,7 @@ func TestDNSEntryUpdated(t *testing.T) {
 		return "2.2.2.2", nil
 	}
 
-	err := updater.UpdateDNSEntries(domainName, []string{"www"}, 3600, "A", getIPAddress)
+	err := updater.UpdateDNSEntries(domainName, []string{"www"}, DefaultDnsEntryTTL, "A", getIPAddress)
 
 	if assert.Nil(t, err) {
 		assert.ElementsMatch(t, domainRepository.DnsEntriesByDomain[domainName], []domain.DNSEntry{
@@ -67,7 +64,7 @@ func TestDNSEntryCreated(t *testing.T) {
 		return "2.2.2.2", nil
 	}
 
-	err := updater.UpdateDNSEntries(domainName, []string{"www2"}, 3600, "A", getIPAddress)
+	err := updater.UpdateDNSEntries(domainName, []string{"www2"}, 2*time.Hour, "A", getIPAddress)
 
 	if assert.Nil(t, err) {
 		assert.ElementsMatch(t, domainRepository.DnsEntriesByDomain[domainName], []domain.DNSEntry{
@@ -80,7 +77,7 @@ func TestDNSEntryCreated(t *testing.T) {
 			{
 				Name:    "www2",
 				Type:    "A",
-				Expire:  3600,
+				Expire:  7200,
 				Content: "2.2.2.2",
 			},
 		})

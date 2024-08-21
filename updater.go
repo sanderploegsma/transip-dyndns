@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/transip/gotransip/v6/domain"
 )
@@ -19,7 +20,7 @@ type Updater struct {
 	DomainRepository DomainRepository
 }
 
-func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, expiry int, entryType string, getIPAddress GetIPAddress) error {
+func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, ttl time.Duration, entryType string, getIPAddress GetIPAddress) error {
 	ipAddress, err := getIPAddress()
 	if err != nil {
 		return err
@@ -58,12 +59,12 @@ func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, ex
 			continue
 		}
 
-		fmt.Printf("Creating new DNS entry '%s' (%s) with content '%s' and expiry %d\n", entryName, entryType, ipAddress, expiry)
+		fmt.Printf("Creating new DNS entry '%s' (%s) with content '%s' and TTL %s\n", entryName, entryType, ipAddress, ttl)
 		newEntry := domain.DNSEntry{
 			Name:    entryName,
 			Content: ipAddress,
 			Type:    entryType,
-			Expire:  expiry,
+			Expire:  int(ttl.Seconds()),
 		}
 		if err = u.DomainRepository.AddDNSEntry(domainName, newEntry); err != nil {
 			fmt.Printf("Failed to create DNS entry: %v\n", err)
