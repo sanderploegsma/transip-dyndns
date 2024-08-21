@@ -5,6 +5,18 @@ Supports both IPv4 and IPv6 addresses, and manages `A` or `AAAA` DNS records on 
 
 Tip: run this utility on a schedule using `cron`, and you won't ever need to worry about keeping your DNS settings up-to-date!
 
+## Installation
+
+### Using Homebrew
+
+```sh
+brew install sanderploegsma/tap/transip-dyndns
+```
+
+### Manual
+
+Grab the latest release for your platform and place the binaries somewhere in your `PATH`, like `/usr/local/bin`.
+
 ## Usage
 
 ```console
