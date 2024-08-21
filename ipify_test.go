@@ -1,38 +1,36 @@
 package main
 
 import (
-	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGetIPv4(t *testing.T) {
-	ip, err := GetIPv4()
-	if err != nil {
-		t.Errorf("failed to get IPv4 address: %v", err)
-	}
+func TestGetIPStatusOK(t *testing.T) {
+	ipAddress := "127.0.0.1"
+	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(ipAddress))
+	}))
 
-	parsed := net.ParseIP(ip)
-	if parsed == nil {
-		t.Errorf("got invalid IP address: %s", ip)
-	}
+	defer func() { testserver.Close() }()
 
-	if parsed.To4() == nil {
-		t.Errorf("got invalid IPv4 address: %s", ip)
+	got, err := getIp(testserver.URL)
+	if assert.Nil(t, err) {
+		assert.Equal(t, ipAddress, got)
 	}
 }
 
-func TestGetIPv6(t *testing.T) {
-	ip, err := GetIPv6()
-	if err != nil {
-		t.Errorf("failed to get IPv6 address: %v", err)
-	}
+func TestGetIPStatusNotOK(t *testing.T) {
+	testserver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+	}))
 
-	parsed := net.ParseIP(ip)
-	if parsed == nil {
-		t.Errorf("got invalid IP address: %s", ip)
-	}
+	defer func() { testserver.Close() }()
 
-	if parsed.To4() != nil {
-		t.Errorf("got invalid IPv6 address: %s", ip)
-	}
+	_, err := getIp(testserver.URL)
+	assert.NotNil(t, err)
 }
