@@ -39,3 +39,7 @@ Then, to automatically create or update a DNS `A` record on example.com called `
 ```sh
 transip-dyndns --account transip-account-name --private-key /path/to/private.key --domain example.com --entry foo --type A
 ```
+
+## Acknowledgements
+
+This utility is heavily inspired by [Jerrythafast/transip-dyndns](https://github.com/Jerrythafast/transip-dyndns).
