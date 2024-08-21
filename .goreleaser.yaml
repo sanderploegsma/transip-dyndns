@@ -35,9 +35,29 @@ archives:
       - goos: windows
         format: zip
 
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
 changelog:
   sort: asc
   filters:
     exclude:
       - "^docs:"
       - "^test:"
+
+release:
+  github:
+    owner: sanderploegsma
+    name: transip-dyndns
+
+brews:
+  - repository:
+      owner: sanderploegsma
+      name: homebrew-tap
+    homepage: https://github.com/sanderploegsma/transip-dyndns
+    description: Automatically update DNS entries in your TransIP domain with your current public IP address
+    test: |
+      system "#{bin}/transip-dyndns --version"
