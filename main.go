@@ -130,6 +130,7 @@ func main() {
 
 			updater := &Updater{
 				DomainRepository: &domain.Repository{Client: client},
+				StdOut:           ctx.App.Writer,
 			}
 
 			errs := make([]error, 0)

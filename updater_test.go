@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"testing"
 	"time"
 
@@ -24,7 +25,7 @@ func TestDNSEntryUpdated(t *testing.T) {
 			},
 		},
 	}
-	updater := &Updater{DomainRepository: domainRepository}
+	updater := &Updater{DomainRepository: domainRepository, StdOut: io.Discard}
 
 	getIPAddress := func() (string, error) {
 		return "2.2.2.2", nil
@@ -58,7 +59,7 @@ func TestDNSEntryCreated(t *testing.T) {
 			},
 		},
 	}
-	updater := &Updater{DomainRepository: domainRepository}
+	updater := &Updater{DomainRepository: domainRepository, StdOut: io.Discard}
 
 	getIPAddress := func() (string, error) {
 		return "2.2.2.2", nil
@@ -91,7 +92,7 @@ func TestCannotDetermineIPAddress(t *testing.T) {
 			domainName: make([]domain.DNSEntry, 0),
 		},
 	}
-	updater := &Updater{DomainRepository: domainRepository}
+	updater := &Updater{DomainRepository: domainRepository, StdOut: io.Discard}
 
 	getIPAddress := func() (string, error) {
 		return "", errors.New("service unavailable")

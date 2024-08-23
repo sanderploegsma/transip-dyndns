@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/transip/gotransip/v6/domain"
@@ -18,13 +19,18 @@ type GetIPAddress func() (string, error)
 
 type Updater struct {
 	DomainRepository DomainRepository
+	StdOut           io.Writer
 }
 
 func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, ttl time.Duration, entryType string, getIPAddress GetIPAddress) error {
+	fmt.Fprintf(u.StdOut, "Updating DNS %s records for %s\n", entryType, domainName)
+
 	ipAddress, err := getIPAddress()
 	if err != nil {
 		return err
 	}
+
+	fmt.Fprintf(u.StdOut, "Current IP address: %s\n", ipAddress)
 
 	dnsEntries, err := u.DomainRepository.GetDNSEntries(domainName)
 	if err != nil {
@@ -44,14 +50,14 @@ func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, tt
 			exists = true
 
 			if entry.Content == ipAddress {
-				fmt.Printf("DNS entry '%s' (%s) is up-to-date\n", entryName, entryType)
+				fmt.Fprintf(u.StdOut, "DNS %s record '%s' is up-to-date\n", entryType, entryName)
 				continue
 			}
 
-			fmt.Printf("Updating content of DNS entry '%s' (%s) to '%s'\n", entryName, entryType, ipAddress)
+			fmt.Fprintf(u.StdOut, "Updating DNS %s record '%s'\n", entryType, entryName)
 			entry.Content = ipAddress
 			if err = u.DomainRepository.UpdateDNSEntry(domainName, entry); err != nil {
-				fmt.Printf("Failed to update DNS entry: %v\n", err)
+				fmt.Fprintf(u.StdOut, "Failed to update DNS record: %v\n", err)
 			}
 		}
 
@@ -59,7 +65,7 @@ func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, tt
 			continue
 		}
 
-		fmt.Printf("Creating new DNS entry '%s' (%s) with content '%s' and TTL %s\n", entryName, entryType, ipAddress, ttl)
+		fmt.Fprintf(u.StdOut, "Creating DNS %s record '%s' with TTL %s\n", entryType, entryName, ttl)
 		newEntry := domain.DNSEntry{
 			Name:    entryName,
 			Content: ipAddress,
@@ -67,12 +73,12 @@ func (u *Updater) UpdateDNSEntries(domainName string, dnsEntryNames []string, tt
 			Expire:  int(ttl.Seconds()),
 		}
 		if err = u.DomainRepository.AddDNSEntry(domainName, newEntry); err != nil {
-			fmt.Printf("Failed to create DNS entry: %v\n", err)
+			fmt.Fprintf(u.StdOut, "Failed to create DNS %s record '%s': %v\n", entryType, entryName, err)
 		}
 	}
 
 	if !success {
-		return errors.New("failed to update one or more DNS entries")
+		return errors.New("failed to update one or more DNS records")
 	}
 
 	return nil
