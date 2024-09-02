@@ -47,6 +47,9 @@ changelog:
     - title: "Bug fixes"
       regexp: '^.*?fix(\(.+\))??!?:.+$'
       order: 200
+    - title: "Dependency updates"
+      regexp: '^.*?deps(\(.+\))??!?:.+$'
+      order: 300
     - title: Other
       order: 9999
   filters:
