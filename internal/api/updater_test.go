@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -31,7 +31,7 @@ func TestDNSEntryUpdated(t *testing.T) {
 		return "2.2.2.2", nil
 	}
 
-	err := updater.UpdateDNSEntries(domainName, []string{"www"}, DefaultDnsEntryTTL, "A", getIPAddress)
+	err := updater.UpdateDNSEntries(domainName, []string{"www"}, 1, "A", getIPAddress)
 
 	if assert.Nil(t, err) {
 		assert.ElementsMatch(t, domainRepository.DnsEntriesByDomain[domainName], []domain.DNSEntry{
