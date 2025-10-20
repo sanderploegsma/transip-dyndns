@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
-	github.com/transip/gotransip/v6 v6.26.0
+	github.com/transip/gotransip/v6 v6.26.1
 	github.com/urfave/cli/v2 v2.27.7
 )
 
